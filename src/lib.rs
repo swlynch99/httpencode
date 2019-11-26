@@ -1,3 +1,7 @@
+//!
+
+#![cfg_attr(not(std), no_std)]
+
 mod http;
 mod request;
 mod response;
@@ -6,6 +10,9 @@ mod util;
 pub use self::http::HttpBuilder;
 pub use self::request::RequestBuilder;
 pub use self::response::ResponseBuilder;
+
+#[cfg(test)]
+mod tests;
 
 /// HTTP method.
 #[derive(Copy, Clone, Debug)]
@@ -63,7 +70,7 @@ pub enum Error {
     InvalidHeaderValue,
 }
 
-type Result<T> = std::result::Result<T, Error>;
+type Result<T> = core::result::Result<T, Error>;
 
 impl Status {
     /// Create a new status from the provided status code.

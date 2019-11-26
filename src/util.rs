@@ -162,9 +162,6 @@ where
     B: BufMut,
     F: Fn(u8) -> bool,
 {
-    use bytes::Buf;
-    use std::io::Cursor;
-
     fn next_invalid<F: Fn(u8) -> bool>(bytes: &[u8], is_valid: &F) -> Option<(usize, u8)> {
         for i in 0..bytes.len() {
             let b = unsafe { *bytes.get_unchecked(i) };
@@ -191,11 +188,9 @@ where
         try_write(buf, &slice)
     }
 
-    let mut cursor = Cursor::new(path);
+    let mut bytes = path;
 
-    while cursor.has_remaining() {
-        let bytes = cursor.bytes();
-
+    while !bytes.is_empty() {
         let advance = if let Some((idx, byte)) = next_invalid(bytes, &is_valid) {
             try_write(buf, &bytes[..idx])?;
             percent_encode(buf, byte)?;
@@ -205,7 +200,7 @@ where
             bytes.len()
         };
 
-        cursor.advance(advance);
+        bytes = &bytes[advance..];
     }
 
     Ok(())

@@ -3,12 +3,13 @@ name = "httpencode"
 version = "0.1.0"
 authors = ["Sean Lynch <slynch@twitter.com>"]
 edition = "2018"
+license = "Apache-2.0 OR MIT"
 
 [features]
-std = [ ]
+std = [ "bytes/std" ]
 default = [ "std" ]
 
 [dependencies]
 # httparse = "1.3"
-bytes = "0.4"
+bytes = { version="0.5", default-features = false }
 memchr = "2.2"
