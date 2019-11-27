@@ -1,15 +1,11 @@
 //!
 
-#![cfg_attr(not(std), no_std)]
+// #![cfg_attr(all(not(std), not(test)), no_std)]
 
 mod http;
-mod request;
-mod response;
 mod util;
 
 pub use self::http::HttpBuilder;
-pub use self::request::RequestBuilder;
-pub use self::response::ResponseBuilder;
 
 #[cfg(test)]
 mod tests;
@@ -55,18 +51,19 @@ pub struct Status {
     code: u16,
 }
 
+#[derive(Debug, Eq, PartialEq, Hash)]
 pub enum Error {
-    // Ran out of buffer space
+    /// Ran out of buffer space
     OutOfBuffer,
-    // A custom method contained invalid characters
+    /// A custom method contained invalid characters
     InvalidMethod,
-    // A path contained invalid characters
-    InvalidPath,
-    // A custom version contains invalid characters
+    /// The URI contained invalid characters
+    InvalidUri,
+    /// A custom version contains invalid characters
     InvalidVersion,
-    // A header key contained invalid characters
+    /// A header key contained invalid characters
     InvalidHeaderKey,
-    // A header value contained invalid characters
+    /// A header value contained invalid characters
     InvalidHeaderValue,
 }
 
@@ -74,7 +71,7 @@ type Result<T> = core::result::Result<T, Error>;
 
 impl Status {
     /// Create a new status from the provided status code.
-    /// 
+    ///
     /// # Panics
     /// Panics if the code is greater than `1000`.
     pub fn new(code: u16) -> Self {

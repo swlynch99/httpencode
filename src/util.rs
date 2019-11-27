@@ -127,7 +127,7 @@ pub(crate) fn write_method<B: BufMut>(buf: &mut B, method: Method) -> Result<()>
 //
 // and `escaped` is defined as
 //
-// > 2.4.1. Escaped Encoding>
+// > 2.4.1. Escaped Encoding
 // >
 // > An escaped octet is encoded as a character triplet, consisting of the
 // > percent character "%" followed by the two hexadecimal digits
@@ -138,20 +138,26 @@ pub(crate) fn write_method<B: BufMut>(buf: &mut B, method: Method) -> Result<()>
 // >     hex         = digit | "A" | "B" | "C" | "D" | "E" | "F" |
 // >                           "a" | "b" | "c" | "d" | "e" | "f"
 pub(crate) fn write_uri<B: BufMut>(buf: &mut B, uri: Uri) -> Result<()> {
-    fn is_valid(byte: u8) -> bool {
+    pub(crate) fn is_valid(byte: u8) -> bool {
         // Bit-packed lookup table of valid unescaped characters.
         //
         // This corresponds to the characters as defined by
         // RFC2396 section 2.
         //
         // Note that no byte above 128 is valid in a URI.
-        const LOOKUP: u128 = 0x47fffffe87ffffffaffffbf200000000u128;
+        const LOOKUP: u128 = 0x47FFFFFE87FFFFFF2FFFFFD200000000;
 
-        return (byte < 128) | (((LOOKUP.wrapping_shr(byte as u32)) & 1) != 0);
+        return (byte < 128) & (((LOOKUP.wrapping_shr(byte as u32)) & 1) != 0);
     }
 
     match uri.data {
-        UriData::Unescaped(path) => write_percent_escaped(buf, path, is_valid),
+        UriData::Unescaped(path) => {
+            if path.is_empty() {
+                return Err(Error::InvalidUri);
+            }
+
+            write_percent_escaped(buf, path, is_valid)
+        }
         UriData::Escaped(path) => try_write(buf, path),
     }
 }
@@ -175,9 +181,10 @@ where
     }
 
     fn hex_encode(byte: u8) -> u8 {
-        match byte & 0xF {
+        let byte = byte & 0xF;
+        match byte {
             0x0..=0x9 => b'0' + byte,
-            0xA..=0xF => b'A' + byte,
+            0xA..=0xF => b'A' + byte - 0xA,
             _ => unreachable!(),
         }
     }
@@ -262,7 +269,7 @@ pub(crate) fn write_u16<B: BufMut>(buf: &mut B, mut num: u16) -> Result<()> {
     }
 
     for i in (0..idx).rev() {
-        buf.put_u8(bytes[i]);
+        buf.put_u8(b'0' + bytes[i]);
     }
 
     Ok(())
@@ -389,7 +396,7 @@ pub(crate) fn validate_header_name(header: &[u8]) -> bool {
         // are valid within `token`.
         const LOOKUP: u128 = 0x57FFFFFFC7FFFFFE03FF6CFE00000000;
 
-        (byte < 128) | ((LOOKUP.wrapping_shr(byte as u32) & 1) != 0)
+        (byte < 128) & ((LOOKUP.wrapping_shr(byte as u32) & 1) != 0)
     }
 
     header.iter().copied().all(is_valid)
@@ -508,16 +515,5 @@ pub(crate) fn lookup_status_line(status: Status) -> &'static str {
 
         // Default, just return a space
         _ => " ",
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // use super::*;
-
-    #[test]
-    fn test_validate_path() {
-        // assert!(validate_path(""));
-        // assert!(validate_path())
     }
 }
