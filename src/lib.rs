@@ -84,11 +84,11 @@ impl Status {
 impl<'a> Uri<'a> {
     pub fn new(uri: &'a [u8]) -> Self {
         Self {
-            data: UriData::Unescaped(uri),
+            data: UriData::Unescaped(uri.as_ref()),
         }
     }
 
-    pub unsafe fn unescaped_unchecked(uri: &'a [u8]) -> Self {
+    pub unsafe fn escaped_unchecked(uri: &'a [u8]) -> Self {
         Self {
             data: UriData::Escaped(uri),
         }

@@ -26,7 +26,7 @@ fn test_write_uri() {
     assert_eq!(escaped(&out), escaped(b"/test%20uri"));
 
     out.clear();
-    let uri = unsafe { Uri::unescaped_unchecked(b"/test uri") };
+    let uri = unsafe { Uri::escaped_unchecked(b"/test uri") };
     write_uri(&mut out, uri).unwrap();
     assert_eq!(escaped(&out), escaped(b"/test uri"));
 

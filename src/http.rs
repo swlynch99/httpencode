@@ -18,18 +18,21 @@ impl<B: BufMut> HttpBuilder<B> {
     /// # Note
     /// If this method fails it may be partially-written into the buffer.
     /// It is necessary to reset the buffer back externally if that happens.
-    pub fn request(mut buf: B, method: Method, uri: Uri, version: Version) -> Result<Self> {
+    #[inline]
+    pub fn request(mut buf: B, method: Method, version: Version, uri: Uri) -> Result<Self> {
         write_request_line(&mut buf, method, uri, version)?;
 
         Ok(Self { buf })
     }
 
     /// Create a new response from the provided status line.
+    #[inline]
     pub fn response(buf: B, version: Version, status: Status) -> Result<Self> {
         Self::response_with_reason(buf, version, status, lookup_status_line(status))
     }
 
     /// Create a new response from the provided status line.
+    #[inline]
     pub fn response_with_reason(
         mut buf: B,
         version: Version,
@@ -48,6 +51,7 @@ impl<B: BufMut> HttpBuilder<B> {
     /// # Note
     /// This method is atomic - if it fails then nothing will be written
     /// to the buffer.
+    #[inline]
     pub fn header(&mut self, key: impl AsRef<[u8]>, val: impl AsRef<[u8]>) -> Result<&mut Self> {
         let key = key.as_ref();
         let val = val.as_ref();
@@ -68,6 +72,7 @@ impl<B: BufMut> HttpBuilder<B> {
     /// # Note
     /// This method is atomic - if it fails then nothing will be written
     /// to the buffer.
+    #[inline]
     pub unsafe fn header_unchecked(
         &mut self,
         key: impl AsRef<[u8]>,
@@ -94,6 +99,7 @@ impl<B: BufMut> HttpBuilder<B> {
     }
 
     /// Complete the HTTP header and return the underlying buffer.
+    #[inline]
     pub fn finish(mut self) -> Result<B> {
         if self.buf.remaining_mut() < b"\r\n".len() {
             return Err(Error::OutOfBuffer);
