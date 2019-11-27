@@ -27,6 +27,8 @@ fn build_req_long(b: &mut test::Bencher) {
     buf.reserve(1 << 14);
 
     b.iter(|| -> Result<_, _> {
+        buf.clear();
+
         let mut req = HttpBuilder::request(
             &mut buf, 
             Method::Get,
@@ -45,7 +47,9 @@ fn build_req_long(b: &mut test::Bencher) {
         req.header("Cookie", "wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; __utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; __utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral|padding=under256")?;
 
         req.finish().map(|_| ())
-    })
+    });
+
+    b.bytes = buf.len() as u64;
 }
 
 #[bench]
@@ -55,6 +59,8 @@ fn build_req_long_unsafe(b: &mut test::Bencher) {
 
     b.iter(|| -> Result<_, _> {
         unsafe { 
+            buf.clear();
+
             let mut req = HttpBuilder::request(
                 &mut buf, 
                 Method::Get,
@@ -74,7 +80,9 @@ fn build_req_long_unsafe(b: &mut test::Bencher) {
 
             req.finish().map(|_| ())
         }
-    })
+    });
+
+    b.bytes = buf.len() as u64;
 }
 
 #[bench]
@@ -83,6 +91,8 @@ fn build_req_short(b: &mut test::Bencher) {
     buf.reserve(1 << 14);
 
     b.iter(|| -> Result<_, _> {
+        buf.clear();
+
         let mut req = HttpBuilder::request(
             &mut buf, 
             Method::Get,
@@ -94,5 +104,33 @@ fn build_req_short(b: &mut test::Bencher) {
         req.header("Cookie", "session=60; user_id=1")?;
 
         req.finish().map(|_| ())
-    })
+    });
+
+    b.bytes = buf.len() as u64;
+}
+
+#[bench]
+fn build_req_short_unsafe (b: &mut test::Bencher) {
+    let mut buf = Vec::new();
+    buf.reserve(1 << 14);
+
+    b.iter(|| -> Result<_, _> { 
+        unsafe {
+            buf.clear();
+
+            let mut req = HttpBuilder::request(
+                &mut buf, 
+                Method::Get,
+                Version::Http11,
+                Uri::escaped_unchecked(b"/")
+            )?;
+
+            req.header_unchecked("Host", "example.com")?;
+            req.header_unchecked("Cookie", "session=60; user_id=1")?;
+
+            req.finish().map(|_| ())
+        }
+    });
+
+    b.bytes = buf.len() as u64;
 }
