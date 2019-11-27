@@ -1,6 +1,6 @@
-//!
+//! Zero-allocation HTTP encoding.
 
-// #![cfg_attr(all(not(std), not(test)), no_std)]
+#![cfg_attr(all(not(std), not(test)), no_std)]
 
 mod http;
 mod util;
