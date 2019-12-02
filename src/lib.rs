@@ -1,6 +1,10 @@
 //! Zero-allocation HTTP encoding.
 
-#![cfg_attr(all(not(std), not(test)), no_std)]
+#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
+
+#[cfg(feature = "std")]
+#[macro_use]
+extern crate thiserror;
 
 mod http;
 mod util;
@@ -52,18 +56,25 @@ pub struct Status {
 }
 
 #[derive(Debug, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "std", derive(Error))]
 pub enum Error {
     /// Ran out of buffer space
+    #[cfg_attr(feature = "std", error("Out of buffer space"))]
     OutOfBuffer,
     /// A custom method contained invalid characters
+    #[cfg_attr(feature = "std", error("Invalid HTTP method"))]
     InvalidMethod,
     /// The URI contained invalid characters
+    #[cfg_attr(feature = "std", error("Invalid HTTP URI"))]
     InvalidUri,
     /// A custom version contains invalid characters
+    #[cfg_attr(feature = "std", error("Invalid HTTP version"))]
     InvalidVersion,
     /// A header key contained invalid characters
+    #[cfg_attr(feature = "std", error("Invalid header key"))]
     InvalidHeaderKey,
     /// A header value contained invalid characters
+    #[cfg_attr(feature = "std", error("Invalid header value"))]
     InvalidHeaderValue,
 }
 
