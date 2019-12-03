@@ -1,10 +1,9 @@
 use bytes::{Buf, BufMut};
 
 use crate::util::{
-    lookup_status_line, validate_header_field, validate_header_name, write_request_line,
-    write_status_line,
+    lookup_status_line, validate_header_name, write_request_line, write_status_line,
 };
-use crate::{Error, Method, Result, Status, Uri, Version};
+use crate::{Error, HeaderValue, Method, Result, Status, Uri, Version};
 
 /// Builder for HTTP requests.
 #[derive(Debug)]
@@ -52,14 +51,13 @@ impl<B: BufMut> HttpBuilder<B> {
     /// This method is atomic - if it fails then nothing will be written
     /// to the buffer.
     #[inline]
-    pub fn header(&mut self, key: impl AsRef<[u8]>, val: impl AsRef<[u8]>) -> Result<&mut Self> {
+    pub fn header(&mut self, key: impl AsRef<[u8]>, val: impl HeaderValue) -> Result<&mut Self> {
         let key = key.as_ref();
-        let val = val.as_ref();
 
         if !validate_header_name(key) {
             return Err(Error::InvalidHeaderKey);
         }
-        if !validate_header_field(val) {
+        if !val.validate() {
             return Err(Error::InvalidHeaderValue);
         }
 
@@ -76,23 +74,22 @@ impl<B: BufMut> HttpBuilder<B> {
     pub unsafe fn header_unchecked(
         &mut self,
         key: impl AsRef<[u8]>,
-        val: impl AsRef<[u8]>,
+        val: impl HeaderValue,
     ) -> Result<&mut Self> {
         let key = key.as_ref();
-        let val = val.as_ref();
 
         if key.is_empty() {
             return Err(Error::InvalidHeaderKey);
         }
 
-        let est_required = key.len() + val.len() + b": \r\n".len();
+        let est_required = key.len() + val.est_len().unwrap_or(0) + b": \r\n".len();
         if self.buf.remaining_mut() < est_required {
             return Err(Error::OutOfBuffer);
         }
 
         self.buf.put_slice(key);
         self.buf.put_slice(b": ");
-        self.buf.put_slice(val);
+        val.put(&mut self.buf)?;
         self.buf.put_slice(b"\r\n");
 
         Ok(self)

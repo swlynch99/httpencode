@@ -233,3 +233,28 @@ fn req_long() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn positive_numerical_header() -> Result<()> {
+    #[rustfmt::skip]
+    let header = "\
+        GET / HTTP/1.1\r\n\
+        Content-Length: 10\r\n\
+        \r\n\
+    ";
+
+    let mut buf = Vec::new();
+    let mut req = HttpBuilder::request(
+        &mut buf,
+        Method::Get,
+        Version::Http11,
+        Uri::new(b"/")
+    )?;
+
+    req.header("Content-Length", 10u128)?;
+    req.finish()?;
+
+    assert_eq!(escaped(&buf), header);
+
+    Ok(())
+}

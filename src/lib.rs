@@ -8,8 +8,10 @@ extern crate thiserror;
 
 mod http;
 mod util;
+mod traits;
 
 pub use self::http::HttpBuilder;
+pub use self::traits::{HeaderValue, OutOfBufferError};
 
 #[cfg(test)]
 mod tests;
@@ -190,4 +192,10 @@ statuses! {
     506 => VARIANT_ALSO_NEGOTIATES;
     507 => INSUFFICIENT_STORAGE;
     508 => LOOP_DETECTED;
+}
+
+impl From<OutOfBufferError> for Error {
+    fn from(_: OutOfBufferError) -> Self {
+        Self::OutOfBuffer
+    }
 }
