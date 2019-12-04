@@ -212,7 +212,7 @@ mod tests {
 
     macro_rules! standard_tests {
         ($( $ty:ident ),*) => {
-            $( 
+            $(
                 test_put!(std::$ty::MAX);
                 test_put!(std::$ty::MIN);
                 test_put!(0 as $ty);
@@ -222,10 +222,7 @@ mod tests {
 
     #[test]
     fn serialize_tests() {
-        standard_tests!(
-            u8, u16, u32, u64, u128, usize,
-            i8, i16, i32, i64, i128, isize
-        );
+        standard_tests!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
     }
 
     #[test]

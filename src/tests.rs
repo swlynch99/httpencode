@@ -177,12 +177,7 @@ fn req_short() -> Result<()> {
     ";
 
     let mut buf = Vec::new();
-    let mut req = HttpBuilder::request(
-        &mut buf, 
-        Method::Get,
-        Version::Http10,
-        Uri::new(b"/")
-    )?;
+    let mut req = HttpBuilder::request(&mut buf, Method::Get, Version::Http10, Uri::new(b"/"))?;
 
     req.header("Host", "example.com")?;
     req.header("Cookie", "session=60; user_id=1")?;
@@ -211,15 +206,18 @@ fn req_long() -> Result<()> {
 
     let mut buf = Vec::new();
     let mut req = HttpBuilder::request(
-        &mut buf, 
+        &mut buf,
         Method::Get,
         Version::Http11,
-        Uri::new(b"/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg")
+        Uri::new(b"/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg"),
     )?;
 
     req.header("Host", "www.kittyhell.com")?;
     req.header("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 Pathtraq/0.9")?;
-    req.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")?;
+    req.header(
+        "Accept",
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    )?;
     req.header("Accept-Language", "ja,en-us;q=0.7,en;q=0.3")?;
     req.header("Accept-Encoding", "gzip,deflate")?;
     req.header("Accept-Charset", "Shift_JIS,utf-8;q=0.7,*;q=0.7")?;
@@ -244,17 +242,23 @@ fn positive_numerical_header() -> Result<()> {
     ";
 
     let mut buf = Vec::new();
-    let mut req = HttpBuilder::request(
-        &mut buf,
-        Method::Get,
-        Version::Http11,
-        Uri::new(b"/")
-    )?;
+    let mut req = HttpBuilder::request(&mut buf, Method::Get, Version::Http11, Uri::new(b"/"))?;
 
     req.header("Content-Length", 10u128)?;
     req.finish()?;
 
     assert_eq!(escaped(&buf), header);
+
+    Ok(())
+}
+
+#[test]
+fn test_body_doesnt_bail() -> Result<()> {
+    let mut buf = Vec::new();
+    let req = HttpBuilder::response(&mut buf, Version::Http11, Status::OK)?;
+
+    let mut body: &[u8] = b"TEST_STRING";
+    req.body(&mut body)?;
 
     Ok(())
 }

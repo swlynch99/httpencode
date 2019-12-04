@@ -7,8 +7,8 @@
 extern crate thiserror;
 
 mod http;
-mod util;
 mod traits;
+mod util;
 
 pub use self::http::HttpBuilder;
 pub use self::traits::{HeaderValue, OutOfBufferError};
@@ -91,6 +91,11 @@ impl Status {
         assert!(code < 1000);
 
         Self { code }
+    }
+
+    /// Get the status line associated with this status code.
+    pub fn status_line(&self) -> Option<&'static str> {
+        crate::util::lookup_status_line(*self)
     }
 }
 

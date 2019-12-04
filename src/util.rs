@@ -434,8 +434,8 @@ pub(crate) fn validate_header_field(field: &[u8]) -> bool {
 // Status lines sourced from [here][IANA].
 //
 // [IANA]: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-pub(crate) fn lookup_status_line(status: Status) -> &'static str {
-    match status.code {
+pub(crate) fn lookup_status_line(status: Status) -> Option<&'static str> {
+    Some(match status.code {
         // 1xx: Informational
         100 => "Continue",
         101 => "Switching Protocols",
@@ -513,7 +513,6 @@ pub(crate) fn lookup_status_line(status: Status) -> &'static str {
         510 => "Not Extended",
         509 => "Network Authentication Required",
 
-        // Default, just return a space
-        _ => " ",
-    }
+        _ => return None,
+    })
 }

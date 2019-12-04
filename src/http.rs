@@ -27,7 +27,12 @@ impl<B: BufMut> HttpBuilder<B> {
     /// Create a new response from the provided status line.
     #[inline]
     pub fn response(buf: B, version: Version, status: Status) -> Result<Self> {
-        Self::response_with_reason(buf, version, status, lookup_status_line(status))
+        Self::response_with_reason(
+            buf,
+            version,
+            status,
+            lookup_status_line(status).unwrap_or(" "),
+        )
     }
 
     /// Create a new response from the provided status line.
@@ -111,7 +116,7 @@ impl<B: BufMut> HttpBuilder<B> {
     pub fn body<I: Buf>(mut self, buf: &mut I) -> Result<B> {
         let len = buf.remaining();
 
-        if len + b"\r\n".len() < self.buf.remaining_mut() {
+        if self.buf.remaining_mut() < len + b"\r\n".len() {
             return Err(Error::OutOfBuffer);
         }
 

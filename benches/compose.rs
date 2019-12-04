@@ -1,6 +1,5 @@
-
-use criterion::{Bencher, criterion_group, criterion_main, Criterion};
-use httpencode::{HttpBuilder, Method, Version, Uri};
+use criterion::{criterion_group, criterion_main, Bencher, Criterion};
+use httpencode::{HttpBuilder, Method, Uri, Version};
 
 fn build_req_long(b: &mut Bencher) {
     let mut buf = Vec::new();
@@ -10,7 +9,7 @@ fn build_req_long(b: &mut Bencher) {
         buf.clear();
 
         let mut req = HttpBuilder::request(
-            &mut buf, 
+            &mut buf,
             Method::Get,
             Version::Http11,
             Uri::new(b"/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg")
@@ -35,11 +34,11 @@ fn build_req_long_unsafe(b: &mut Bencher) {
     buf.reserve(1 << 14);
 
     b.iter(|| -> Result<_, _> {
-        unsafe { 
+        unsafe {
             buf.clear();
 
             let mut req = HttpBuilder::request(
-                &mut buf, 
+                &mut buf,
                 Method::Get,
                 Version::Http11,
                 Uri::escaped_unchecked(b"/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg")
@@ -67,12 +66,7 @@ fn build_req_short(b: &mut Bencher) {
     b.iter(|| -> Result<_, _> {
         buf.clear();
 
-        let mut req = HttpBuilder::request(
-            &mut buf, 
-            Method::Get,
-            Version::Http11,
-            Uri::new(b"/")
-        )?;
+        let mut req = HttpBuilder::request(&mut buf, Method::Get, Version::Http11, Uri::new(b"/"))?;
 
         req.header("Host", "example.com")?;
         req.header("Cookie", "session=60; user_id=1")?;
@@ -81,19 +75,19 @@ fn build_req_short(b: &mut Bencher) {
     });
 }
 
-fn build_req_short_unsafe (b: &mut Bencher) {
+fn build_req_short_unsafe(b: &mut Bencher) {
     let mut buf = Vec::new();
     buf.reserve(1 << 14);
 
-    b.iter(|| -> Result<_, _> { 
+    b.iter(|| -> Result<_, _> {
         unsafe {
             buf.clear();
 
             let mut req = HttpBuilder::request(
-                &mut buf, 
+                &mut buf,
                 Method::Get,
                 Version::Http11,
-                Uri::escaped_unchecked(b"/")
+                Uri::escaped_unchecked(b"/"),
             )?;
 
             req.header_unchecked("Host", "example.com")?;
