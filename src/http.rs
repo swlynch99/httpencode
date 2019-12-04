@@ -5,9 +5,6 @@ use crate::util::{
 };
 use crate::{Error, HeaderValue, Method, Result, Status, Uri, Version};
 
-use core::fmt::Display;
-use crate::traits::BufferFmt;
-
 /// Builder for HTTP requests.
 #[derive(Debug)]
 pub struct HttpBuilder<B: BufMut> {
@@ -132,19 +129,6 @@ impl<B: BufMut> HttpBuilder<B> {
             let len = bytes.len();
             buf.advance(len);
         }
-
-        Ok(self.buf)
-    }
-
-    pub fn body_fmt<F: Display>(mut self, fmt: F) -> Result<B> {
-        if self.buf.remaining_mut() < b"\r\n".len() {
-            return Err(Error::OutOfBuffer);
-        }
-
-        self.buf.put_slice(b"\r\n");
-
-        write!(&mut BufferFmt(&mut self.buf), "{}", fmt)
-            .map_err(|_| Error::OutOfBuffer)?;
 
         Ok(self.buf)
     }
