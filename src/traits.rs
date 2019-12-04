@@ -142,9 +142,9 @@ macro_rules! impl_signed {
 impl_unsigned!(usize, u8, u16, u32, u64, u128);
 impl_signed!(isize, i8, i16, i32, i64, i128);
 
-struct FormattedValue<'b, B: BufMut>(&'b mut B);
+pub(crate) struct BufferFmt<'b, B: BufMut>(pub &'b mut B);
 
-impl<'b, B: BufMut> fmt::Write for FormattedValue<'b, B> {
+impl<'b, B: BufMut> fmt::Write for BufferFmt<'b, B> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         s.put(self.0).map_err(|_| fmt::Error)
     }
@@ -159,7 +159,7 @@ mod httpdate {
 
     impl HeaderValue for HttpDate {
         fn put<B: BufMut>(&self, buf: &mut B) -> Result<(), OutOfBufferError> {
-            write!(&mut FormattedValue(buf), "{}", self).map_err(|_| OutOfBufferError)
+            write!(&mut BufferFmt(buf), "{}", self).map_err(|_| OutOfBufferError)
         }
 
         fn est_len(&self) -> Option<usize> {
