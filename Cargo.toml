@@ -6,7 +6,7 @@ edition = "2018"
 license = "Apache-2.0 OR MIT"
 
 [features]
-std = [ "bytes/std" ]
+std = [ "bytes/std", "arrayvec/std", "httpdate" ]
 default = [ "std" ]
 
 [dependencies]
@@ -18,6 +18,10 @@ thiserror = "1.0"
 version="0.5.1"
 default-features=false
 features = [ "array-sizes-33-128" ]
+
+[dependencies.httpdate]
+version = "0.3.2"
+optional = true
 
 [dev-dependencies]
 criterion = "0.3.0"

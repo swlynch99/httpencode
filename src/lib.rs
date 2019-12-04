@@ -13,6 +13,9 @@ mod util;
 pub use self::http::HttpBuilder;
 pub use self::traits::{HeaderValue, OutOfBufferError};
 
+#[cfg(feature = "httpdate")]
+pub use httpdate::HttpDate;
+
 #[cfg(test)]
 mod tests;
 

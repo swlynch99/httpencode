@@ -1,34 +1,11 @@
 use arrayvec::ArrayVec;
 use bytes::BufMut;
 
-pub trait Sealed {}
-
-macro_rules! sealed {
-    ($( $ty:ty ),*) => {
-        $( impl Sealed for $ty {})*
-    }
-}
-
-sealed!(
-    &'_ [u8],
-    &'_ str,
-    usize,
-    u8,
-    u16,
-    u32,
-    u64,
-    u128,
-    isize,
-    i8,
-    i16,
-    i32,
-    i64,
-    i128
-);
+use core::fmt;
 
 pub struct OutOfBufferError;
 
-pub trait HeaderValue: Sealed {
+pub trait HeaderValue {
     fn put<B: BufMut>(&self, buf: &mut B) -> Result<(), OutOfBufferError>;
 
     fn validate(&self) -> bool {
@@ -164,6 +141,32 @@ macro_rules! impl_signed {
 
 impl_unsigned!(usize, u8, u16, u32, u64, u128);
 impl_signed!(isize, i8, i16, i32, i64, i128);
+
+struct FormattedValue<'b, B: BufMut>(&'b mut B);
+
+impl<'b, B: BufMut> fmt::Write for FormattedValue<'b, B> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        s.put(self.0).map_err(|_| fmt::Error)
+    }
+}
+
+#[cfg(feature = "httpdate")]
+mod httpdate {
+    use super::*;
+    use crate::HttpDate;
+
+    use std::fmt::Write;
+
+    impl HeaderValue for HttpDate {
+        fn put<B: BufMut>(&self, buf: &mut B) -> Result<(), OutOfBufferError> {
+            write!(&mut FormattedValue(buf), "{}", self).map_err(|_| OutOfBufferError)
+        }
+
+        fn est_len(&self) -> Option<usize> {
+            Some(30)
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
