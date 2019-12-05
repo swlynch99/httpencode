@@ -2,14 +2,12 @@
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
-#[cfg(feature = "std")]
-#[macro_use]
-extern crate thiserror;
-
+mod error;
 mod http;
 mod traits;
 mod util;
 
+pub use self::error::Error;
 pub use self::http::HttpBuilder;
 pub use self::traits::{HeaderValue, OutOfBufferError};
 
@@ -58,29 +56,6 @@ pub struct Uri<'a> {
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Status {
     code: u16,
-}
-
-#[derive(Debug, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "std", derive(Error))]
-pub enum Error {
-    /// Ran out of buffer space
-    #[cfg_attr(feature = "std", error("Out of buffer space"))]
-    OutOfBuffer,
-    /// A custom method contained invalid characters
-    #[cfg_attr(feature = "std", error("Invalid HTTP method"))]
-    InvalidMethod,
-    /// The URI contained invalid characters
-    #[cfg_attr(feature = "std", error("Invalid HTTP URI"))]
-    InvalidUri,
-    /// A custom version contains invalid characters
-    #[cfg_attr(feature = "std", error("Invalid HTTP version"))]
-    InvalidVersion,
-    /// A header key contained invalid characters
-    #[cfg_attr(feature = "std", error("Invalid header key"))]
-    InvalidHeaderKey,
-    /// A header value contained invalid characters
-    #[cfg_attr(feature = "std", error("Invalid header value"))]
-    InvalidHeaderValue,
 }
 
 type Result<T> = core::result::Result<T, Error>;
