@@ -6,10 +6,12 @@ mod error;
 mod http;
 mod traits;
 mod util;
+mod request;
 
 pub use self::error::Error;
 pub use self::http::HttpBuilder;
 pub use self::traits::{HeaderValue, OutOfBufferError};
+pub use self::request::{get, head, options, post, put, patch, delete, trace};
 
 #[cfg(feature = "httpdate")]
 pub use httpdate::HttpDate;
