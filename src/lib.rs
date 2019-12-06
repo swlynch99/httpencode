@@ -8,6 +8,7 @@ mod traits;
 mod util;
 
 pub mod request;
+pub mod response;
 
 pub use self::error::Error;
 pub use self::http::HttpBuilder;
